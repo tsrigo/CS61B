@@ -1,5 +1,6 @@
 package lab9;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -17,8 +18,8 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     private ArrayMap<K, V>[] buckets;
     private int size;
 
-    private int loadFactor() {
-        return size / buckets.length;
+    private double loadFactor() {
+        return (double)size / buckets.length;
     }
 
     public MyHashMap() {
@@ -53,27 +54,49 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
      */
     @Override
     public V get(K key) {
-        throw new UnsupportedOperationException();
+        int k = hash(key);
+        return buckets[k].get(key);
     }
 
+    private void resize() {
+        ArrayMap<K, V>[] new_buckets = new ArrayMap[buckets.length * 2];
+        for (int i = 0; i < new_buckets.length; i += 1) {
+            new_buckets[i] = new ArrayMap<>();
+        }
+
+        for(K key : helperSet){
+            int old_k = hash(key);
+            int new_k = Math.floorMod(key.hashCode(), buckets.length * 2);
+            V v = buckets[old_k].get(key);
+            new_buckets[new_k].put(key, v);
+        }
+        buckets = new_buckets;
+    }
     /* Associates the specified value with the specified key in this map. */
     @Override
     public void put(K key, V value) {
-        throw new UnsupportedOperationException();
+        if (loadFactor() > MAX_LF){
+            resize();
+        }
+
+        helperSet.add(key);
+        int k = hash(key), t = buckets[k].size();
+        buckets[k].put(key, value);
+        this.size += buckets[k].size() - t;
     }
 
     /* Returns the number of key-value mappings in this map. */
     @Override
     public int size() {
-        throw new UnsupportedOperationException();
+        return size;
     }
 
     //////////////// EVERYTHING BELOW THIS LINE IS OPTIONAL ////////////////
-
+    private Set<K> helperSet = new HashSet<>();
     /* Returns a Set view of the keys contained in this map. */
     @Override
     public Set<K> keySet() {
-        throw new UnsupportedOperationException();
+        return helperSet;
     }
 
     /* Removes the mapping for the specified key from this map if exists.
