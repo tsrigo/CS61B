@@ -205,6 +205,8 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         /* TODO: Your code here! */
         int idx = dfs(item, 1);
         contents[idx].myPriority = priority;
+        swim(idx);
+        sink(idx);
     }
 
     /**
