@@ -1,4 +1,7 @@
 import org.junit.Test;
+
+import java.util.Queue;
+
 import static org.junit.Assert.*;
 
 /**
@@ -28,7 +31,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      */
     private static int leftIndex(int i) {
         /* TODO: Your code here! */
-        return 0;
+        return i << 1;
     }
 
     /**
@@ -36,7 +39,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      */
     private static int rightIndex(int i) {
         /* TODO: Your code here! */
-        return 0;
+        return (i << 1) + 1;
     }
 
     /**
@@ -44,7 +47,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      */
     private static int parentIndex(int i) {
         /* TODO: Your code here! */
-        return 0;
+        return i >> 1;
     }
 
     /**
@@ -107,8 +110,11 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         // Throws an exception if index is invalid. DON'T CHANGE THIS LINE.
         validateSinkSwimArg(index);
 
-        /** TODO: Your code here. */
-        return;
+        // BUG: 这里要check父节点的范围
+        while (inBounds(parentIndex(index)) && min(index, parentIndex(index)) == index){
+            swap(index, parentIndex(index));
+            index = parentIndex(index);
+        }
     }
 
     /**
@@ -118,8 +124,16 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         // Throws an exception if index is invalid. DON'T CHANGE THIS LINE.
         validateSinkSwimArg(index);
 
-        /** TODO: Your code here. */
-        return;
+
+        for (int left = leftIndex(index), right = rightIndex(index);
+             min(index, left) == left || min(index, right) == right;
+             left = leftIndex(index), right = rightIndex(index)){
+            int smaller = min(left, right);
+            if(!inBounds(smaller)) break;
+            swap(index, smaller);
+            index = smaller;
+            // BUG: 注意每次都得更新左右节点, 还有最好check一下即将交换的index的范围是否正确
+        }
     }
 
     /**
@@ -134,6 +148,9 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         }
 
         /* TODO: Your code here! */
+        Node newItem = new Node(item, priority);
+        this.contents[++ size] = newItem;
+        swim(size);
     }
 
     /**
@@ -143,7 +160,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
     @Override
     public T peek() {
         /* TODO: Your code here! */
-        return null;
+        return contents[1].item();
     }
 
     /**
@@ -158,7 +175,11 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
     @Override
     public T removeMin() {
         /* TODO: Your code here! */
-        return null;
+        T res = peek();
+        swap(1, size);
+        size --;
+        sink(1);
+        return res;
     }
 
     /**
@@ -178,9 +199,23 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      * bonus problem, but shouldn't be too hard if you really understand heaps
      * and think about the algorithm before you start to code.
      */
+    private int dfs(T item, int index){
+        // help find the index of item.
+        if (!inBounds(index)) return 0;
+        if (contents[index].item().equals(item)){
+            return index;
+        }
+        int left = dfs(item, leftIndex(index));
+        if (left != 0) return left;
+        int right = dfs(item, rightIndex(index));
+        if (right != 0) return right;
+        return 0;
+    }
     @Override
     public void changePriority(T item, double priority) {
         /* TODO: Your code here! */
+        int idx = dfs(item, 1);
+        contents[idx].myPriority = priority;
         return;
     }
 
