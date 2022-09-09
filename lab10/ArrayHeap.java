@@ -192,18 +192,20 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      * bonus problem, but shouldn't be too hard if you really understand heaps
      * and think about the algorithm before you start to code.
      */
-    private int dfs(T item, int index){
+    private int transversal(T item){
         // help find the index of item.
-        if (!inBounds(index)) return 0;
-        if (contents[index].item().equals(item)){
-            return index;
+        for (int i = 0; i < size; i ++ ){
+            if (contents[i].item().equals(item)){
+                return i;
+            }
         }
-        return dfs(item, rightIndex(index)) + dfs(item, leftIndex(index));
+        return 0;
     }
     @Override
     public void changePriority(T item, double priority) {
         /* TODO: Your code here! */
-        int idx = dfs(item, 1);
+        int idx = transversal(item);
+        if (idx == 0) throw new IllegalArgumentException("no such item in the heap");
         contents[idx].myPriority = priority;
         swim(idx);
         sink(idx);
