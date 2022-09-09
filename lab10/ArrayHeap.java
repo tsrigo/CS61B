@@ -1,7 +1,5 @@
 import org.junit.Test;
 
-import java.util.Queue;
-
 import static org.junit.Assert.*;
 
 /**
@@ -108,7 +106,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         validateSinkSwimArg(index);
 
         // BUG: 不知道算不算bug，swim和sink应该递归调用
-        if (inBounds(parentIndex(index)) && min(index, parentIndex(index)) == index){
+        if (inBounds(index) && inBounds(parentIndex(index)) && min(index, parentIndex(index)) == index){
             swap(index, parentIndex(index));
             swim(parentIndex(index));
         }
@@ -122,9 +120,9 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         validateSinkSwimArg(index);
 
         int left = leftIndex(index), right = rightIndex(index);
-        if (min(index, left) == left || min(index, right) == right){
-            int smaller = min(left, right);
-            if(!inBounds(smaller)) return;
+        int smaller = min(left, right);
+
+        if (inBounds(index) && inBounds(smaller) && min(index, smaller) == smaller){
             swap(index, smaller);
             sink(smaller);
         }
