@@ -67,10 +67,7 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
      * invalid because we leave the 0th entry blank.
      */
     private boolean inBounds(int index) {
-        if ((index > size) || (index < 1)) {
-            return false;
-        }
-        return true;
+        return (index <= size) && (index >= 1);
     }
 
     /**
@@ -110,10 +107,10 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         // Throws an exception if index is invalid. DON'T CHANGE THIS LINE.
         validateSinkSwimArg(index);
 
-        // BUG: 这里要check父节点的范围
-        while (inBounds(parentIndex(index)) && min(index, parentIndex(index)) == index){
+        // BUG: 不知道算不算bug，swim和sink应该递归调用
+        if (inBounds(parentIndex(index)) && min(index, parentIndex(index)) == index){
             swap(index, parentIndex(index));
-            index = parentIndex(index);
+            swim(parentIndex(index));
         }
     }
 
@@ -124,15 +121,12 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         // Throws an exception if index is invalid. DON'T CHANGE THIS LINE.
         validateSinkSwimArg(index);
 
-
-        for (int left = leftIndex(index), right = rightIndex(index);
-             min(index, left) == left || min(index, right) == right;
-             left = leftIndex(index), right = rightIndex(index)){
+        int left = leftIndex(index), right = rightIndex(index);
+        if (min(index, left) == left || min(index, right) == right){
             int smaller = min(left, right);
-            if(!inBounds(smaller)) break;
+            if(!inBounds(smaller)) return;
             swap(index, smaller);
-            index = smaller;
-            // BUG: 注意每次都得更新左右节点, 还有最好check一下即将交换的index的范围是否正确
+            sink(smaller);
         }
     }
 
@@ -205,18 +199,13 @@ public class ArrayHeap<T> implements ExtrinsicPQ<T> {
         if (contents[index].item().equals(item)){
             return index;
         }
-        int left = dfs(item, leftIndex(index));
-        if (left != 0) return left;
-        int right = dfs(item, rightIndex(index));
-        if (right != 0) return right;
-        return 0;
+        return dfs(item, rightIndex(index)) + dfs(item, leftIndex(index));
     }
     @Override
     public void changePriority(T item, double priority) {
         /* TODO: Your code here! */
         int idx = dfs(item, 1);
         contents[idx].myPriority = priority;
-        return;
     }
 
     /**
