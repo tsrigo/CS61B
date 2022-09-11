@@ -14,7 +14,7 @@ public class Board implements WorldState{
         }
     }
     public int tileAt(int i, int j){
-        if (i > size() || j > size() || i < 0 || j < 0) throw new IllegalArgumentException("Out of range");
+        if (i > size() || j > size() || i < 0 || j < 0) throw new IndexOutOfBoundsException();
         return a[i][j];
     }
     public int size(){
@@ -124,4 +124,13 @@ public class Board implements WorldState{
         return s.toString();
     }
 
+    public int hashCode(){
+        int res = 0;
+        for (int i = 0; i < N; i ++ ){
+            for (int j = 0; j < N; j ++ ){
+                res = res * 10 + a[i][j];
+            }
+        }
+        return res;
+    }
 }
