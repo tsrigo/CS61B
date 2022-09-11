@@ -94,9 +94,10 @@ public class Board implements WorldState{
         return manhattan();
     }
     public boolean equals(Object y){
-        if (!(y instanceof Board ny)){
+        if (!(y instanceof Board)){
             throw new IllegalArgumentException("y is not instance of Board");
         }
+        Board ny = (Board) y;
         if (this.size() != ny.size()) return false;
         for (int i = 0; i < N; i ++ ){
             for (int j = 0; j < N; j ++ ){
