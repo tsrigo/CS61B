@@ -1,5 +1,6 @@
 package hw4.puzzle;
 
+import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.Stack;
 
 import java.util.Comparator;
@@ -8,11 +9,11 @@ import java.util.PriorityQueue;
 
 public class Solver {
     static class searchNode {
-        WorldState state;
-        int dist;
-        searchNode prev;
+        private WorldState state;
+        private int dist;
+        private searchNode prev;
 
-        private searchNode(WorldState state, int dist, searchNode prev){
+        public searchNode(WorldState state, int dist, searchNode prev){
             this.state = state;
             this.dist = dist;
             this.prev = prev;
@@ -42,11 +43,11 @@ public class Solver {
     public Solver(WorldState initial){
 //        HashMap<searchNode, Boolean> H = new HashMap<>();
         int hh = 1;
-        PriorityQueue<searchNode> Q = new PriorityQueue<>(cmp);
+        MinPQ<searchNode> Q = new MinPQ<>(cmp);
         searchNode init = new searchNode(initial, 0, null);
-        Q.add(init);
+        Q.insert(init);
         while (!Q.isEmpty()){
-            searchNode st = Q.poll();
+            searchNode st = Q.delMin();
             //System.out.println(st.state);
 
             if (st.state.isGoal()) {
@@ -61,7 +62,7 @@ public class Solver {
             for (WorldState e : st.state.neighbors()){
                 searchNode ne = new searchNode(e, st.dist + 1, st);
                 if (st.prev == null ||  !ne.state.equals(st.prev.state)){// ?H.get(ne) == null
-                    Q.add(ne);
+                    Q.insert(ne);
 //                    hh ++ ;
                 }
             }
