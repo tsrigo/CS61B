@@ -6,7 +6,9 @@ import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * Graph for storing all of the intersection (vertex) and road (edge) information.
@@ -20,6 +22,111 @@ import java.util.ArrayList;
 public class GraphDB {
     /** Your instance variables for storing the graph. You should consider
      * creating helper classes, e.g. Node, Edge, etc. */
+    private HashMap<Long, Node> V;
+    public class Node {
+        long id;
+        double lat;
+        double lon;
+        HashMap<String, String> tag;
+        HashSet<Long> adj;
+        Node(long id, double lat, double lon, HashMap<String, String> param, HashSet<Long> adj){
+            this.id = id;
+            this.lat = lat;
+            this.lon = lon;
+            this.tag = param;
+            this.adj = adj;
+        }
+
+
+    }
+
+    public void setTag(long id, String k, String v){
+        if (V.get(id) == null) {
+            throw new IllegalArgumentException(id + " is not initialized.");
+        }
+        getTag(id).put(k, v);
+    }
+    public HashMap<String, String> getTag(long id){
+        if (V.get(id) == null) {
+            throw new IllegalArgumentException(id + " is not initialized.");
+        }
+        return V.get(id).tag;
+    }
+    public void addNode(long id, double lat, double lon){
+        if (V == null) V = new HashMap<>();
+
+        if (V.get(id) != null){
+            throw new IllegalArgumentException("node " + id + " already exists");
+        }
+        V.put(id, new Node(id, lat, lon, new HashMap<>(), new HashSet<>()));
+    }
+
+    private HashMap<Long, LinkedList<Long>> E;
+
+//    private static class Edge {
+//        Long adjvex;
+//        Edge next;
+////        HashMap<String, String> tag;
+//    }
+
+    public void addEdge(long idA, long idB) {
+        if (V.get(idA) == null) {
+            throw new IllegalArgumentException(idA + " doesn't exist or isn't initialized.");
+        }
+        if (V.get(idB) == null) {
+            throw new IllegalArgumentException(idB + " doesn't exist or isn't initialized.");
+        }
+        if (E == null) {
+            E = new HashMap<>();
+        }
+        if (V.get(idA).adj == null){
+            V.get(idA).adj = new HashSet<>();
+        }
+        if (V.get(idB).adj == null){
+            V.get(idB).adj = new HashSet<>();
+        }
+        E.computeIfAbsent(idA, k -> new LinkedList<>());
+        E.computeIfAbsent(idB, k -> new LinkedList<>());
+
+        E.get(idA).add(idB);
+
+        V.get(idA).adj.add(idB);
+        V.get(idB).adj.add(idA);
+    }
+
+    HashMap<Long, Way> W;
+    public class Way {
+        long id;
+        HashMap<String, String> tag;
+        LinkedList<Long> ref;
+        Way(){
+            tag = new HashMap<>();
+            ref = new LinkedList<>();
+        }
+    }
+    public void addWay(long id){
+        if (W == null){
+            W = new HashMap<>();
+        }
+        W.put(id, new Way());
+    }
+
+    public void addWaytag(long id, String K, String V){
+        if (W.get(id) == null){
+            throw new IllegalArgumentException(id + " not existed");
+        }
+        W.get(id).tag.put(K, V);
+    }
+
+    public String getWaytag(long id, String K){
+        if (W.get(id) == null){
+            throw new IllegalArgumentException(id + " not existed");
+        }
+        return W.get(id).tag.get(K);
+    }
+    public GraphDB(){
+
+    }
 
     /**
      * Example constructor shows how to create and start an XML parser.
@@ -57,7 +164,15 @@ public class GraphDB {
      *  we can reasonably assume this since typically roads are connected.
      */
     private void clean() {
-        // TODO: Your code here.
+        HashSet<Long> tep = new HashSet<>();
+        for (long i : vertices()){
+            if (V.get(i).adj == null || V.get(i).adj.size() == 0){
+                tep.add(i);
+            }
+        }
+        for (long i : tep){
+            V.remove(i);
+        }
     }
 
     /**
@@ -65,8 +180,7 @@ public class GraphDB {
      * @return An iterable of id's of all vertices in the graph.
      */
     Iterable<Long> vertices() {
-        //YOUR CODE HERE, this currently returns only an empty list.
-        return new ArrayList<Long>();
+        return V.keySet();
     }
 
     /**
@@ -75,7 +189,10 @@ public class GraphDB {
      * @return An iterable of the ids of the neighbors of v.
      */
     Iterable<Long> adjacent(long v) {
-        return null;
+        if (V.get(v) == null){
+            throw new IllegalArgumentException(v + " is not existed!");
+        }
+        return V.get(v).adj;
     }
 
     /**
@@ -136,7 +253,17 @@ public class GraphDB {
      * @return The id of the node in the graph closest to the target.
      */
     long closest(double lon, double lat) {
-        return 0;
+        long ans = -1;
+        double dis = 10000000.0;
+        for (long i : vertices()){
+            double iLon = lon(i), iLat = lat(i);
+            double tep = distance(lon, lat, iLon, iLat);
+            if (tep < dis){
+                ans = i;
+                dis = tep;
+            }
+        }
+        return ans;
     }
 
     /**
@@ -145,7 +272,10 @@ public class GraphDB {
      * @return The longitude of the vertex.
      */
     double lon(long v) {
-        return 0;
+        if (V.get(v) == null){
+            throw new IllegalArgumentException(v + " doesn't exist");
+        }
+        return V.get(v).lon;
     }
 
     /**
@@ -154,6 +284,9 @@ public class GraphDB {
      * @return The latitude of the vertex.
      */
     double lat(long v) {
-        return 0;
+        if (V.get(v) == null){
+            throw new IllegalArgumentException(v + " doesn't exist");
+        }
+        return V.get(v).lat;
     }
 }
