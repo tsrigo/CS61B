@@ -13,6 +13,7 @@ import java.util.Map;
 public class Rasterer {
     /*
     TODO: 在拖动到某些位置时，地图会突然跳转，特别是在放大情况无法移动到下端
+    TODO: 缩小之后再移动，会自动放大
      */
     /**
      * 两个角落的坐标.

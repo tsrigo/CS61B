@@ -162,9 +162,11 @@ public class GraphBuildingHandler extends DefaultHandler {
             if (poss.isEmpty()){
                 throw new IllegalAccessError("poss is empty! please check!");
             }
-
+            String wayName = g.getWaytag(activeWay, "name");
             long st = poss.poll();
             while (!poss.isEmpty()){
+                if (g.getTag(st).get("name") == null)
+                    g.setTag(st, "name", wayName);
                 long ne = poss.poll();
                 g.addEdge(st, ne);
                 g.addEdge(ne, st);

@@ -1,5 +1,4 @@
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,7 +24,52 @@ public class Router {
      */
     public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
                                           double destlon, double destlat) {
-        return null; // FIXME
+
+        long st = g.closest(stlon, stlat);
+        long ed = g.closest(destlon, destlat);
+
+        final HashMap<Long, Double> disTO = new HashMap<>();
+        final HashMap<Long, Long> edgeTo = new HashMap<>();
+        final HashMap<Long, Boolean> marked = new HashMap<>();
+        final HashMap<Long, Double> helpDis = new HashMap<>();
+        final Comparator<Long> cmp = (o1, o2) -> {
+            Double a = disTO.get(o1) + g.distance(o1, st);
+            Double b = disTO.get(o2) + g.distance(o2, st);
+            return a.compareTo(b);
+        };
+        // 能不能返回正确的大小关系？ —— 开始确实不能 // (disTO.get(o1) > disTO.get(o2)); // BUG : 使用 (int) (disTO.get(o1) - disTO.get(o2))
+        LinkedList<Long> ans = new LinkedList<>();
+        PriorityQueue<Long> Q = new PriorityQueue<>(cmp);
+
+        disTO.put(st, 0.0); // 这里是不是 0 ？ —— 是
+        Q.add(st);
+        while (!Q.isEmpty()){
+            long now = Q.poll();
+
+            if (marked.get(now) != null){ // BUG: 节点应该在出队的时候才进行标记
+                continue;
+            }
+            marked.put(now, true);
+
+            for (long i : g.adjacent(now)){
+                if (disTO.get(i) == null || disTO.get(i) > disTO.get(now) + g.distance(i, now)){
+                    edgeTo.put(i, now);
+                    disTO.put(i, disTO.get(now) + g.distance(i, now));
+                    Q.add(i);
+                }
+            }
+        }
+        if (disTO.get(ed) == null || edgeTo.get(ed) == null) {
+            throw new IllegalArgumentException("ed init failed");
+        }
+
+        long t = ed;
+        while (t != st){
+            ans.addFirst(t);
+            t = edgeTo.get(t);
+        }
+        ans.addFirst(st);
+        return ans; // FIXME
     }
 
     /**
@@ -37,9 +81,50 @@ public class Router {
      * route.
      */
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
-        return null; // FIXME
+        List<NavigationDirection> ans = new ArrayList<>();
+        NavigationDirection st = new NavigationDirection(0, g.getTag(route.get(0)).get("name"), 0);
+
+        // TODO 251225761 表示的是一个路口，很多路上都会有它
+
+        long prev = route.get(0);
+        String curName = st.way;
+        NavigationDirection now = st;
+        for (int i = 0; i < route.size();i ++ ){
+            long curNode = route.get(i);
+//            System.out.println("curNode is " + curNode + g.getTag(curNode));
+            if (getBear(g, curNode, prev) == 1 || (g.getTag(curNode).get("name") != null && g.getTag(curNode).get("name").equals(curName))){
+                now.distance += g.distance(curNode, prev);
+            }
+            else {
+                System.out.println(now);
+                ans.add(now);
+                int bear = getBear(g, curNode, prev);
+                String name = g.getTag(curNode).get("name");
+                NavigationDirection tran = new NavigationDirection(bear, name, 0);
+                now = tran;
+                curName = name;
+            }
+            prev = curNode;
+        }
+        return ans;
     }
 
+    private static int getBear(GraphDB g, long a, long b){
+        double bear = g.bearing(a, b);
+        if (bear > 0){
+            if (bear < 15) return 1;
+            if (bear < 30) return 3;
+            if (bear < 100) return 4;
+            else return 7;
+        }
+        else {
+            bear = -bear;
+            if (bear < 15) return 1;
+            if (bear < 30) return 2;
+            if (bear < 100) return 5;
+            else return 6;
+        }
+    }
 
     /**
      * Class to represent a navigation direction, which consists of 3 attributes:
@@ -92,6 +177,12 @@ public class Router {
             this.direction = STRAIGHT;
             this.way = UNKNOWN_ROAD;
             this.distance = 0.0;
+        }
+
+        public NavigationDirection(int direction, String way, double distance) {
+            this.direction = direction;
+            this.way = way;
+            this.distance = distance;
         }
 
         public String toString() {

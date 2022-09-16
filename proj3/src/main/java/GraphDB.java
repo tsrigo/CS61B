@@ -36,8 +36,6 @@ public class GraphDB {
             this.tag = param;
             this.adj = adj;
         }
-
-
     }
 
     public void setTag(long id, String k, String v){

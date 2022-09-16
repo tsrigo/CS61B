@@ -51,6 +51,21 @@ public class TestRouterTiny {
         expected.add(63L);
         expected.add(66L);
         expected.add(46L);
+        long[] a = new long[]{41L, 63L, 66L, 46L};
+        long[] b = new long[]{41L, 11L, 22L, 46L};
+        double sum = 0;
+        for (int i = 0; i < 3; i ++ ){
+            System.out.printf("dis between %d and %d is %f \n", a[i], a[i + 1], graphTiny.distance(a[i], a[i + 1]));
+            sum += graphTiny.distance(a[i], a[i + 1]);
+        }
+        System.out.println(sum);
+        a = b;
+        sum = 0;
+        for (int i = 0; i < 3; i ++ ){
+            System.out.printf("dis between %d and %d is %f \n", a[i], a[i + 1], graphTiny.distance(a[i], a[i + 1]));
+            sum += graphTiny.distance(a[i], a[i + 1]);
+        }
+        System.out.println(sum);
         assertEquals(expected, actual);
     }
 

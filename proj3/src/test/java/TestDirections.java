@@ -69,6 +69,7 @@ public class TestDirections {
             lineIdx++;
             List<Router.NavigationDirection> directions = new ArrayList<>();
             for (int j = 0; j < numDirections; j++) {
+//                System.out.println(lines.get(lineIdx));
                 directions.add(Router.NavigationDirection.fromString(lines.get(lineIdx)));
                 lineIdx++;
             }
