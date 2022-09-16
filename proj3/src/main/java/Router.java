@@ -33,8 +33,8 @@ public class Router {
         final HashMap<Long, Boolean> marked = new HashMap<>();
         final HashMap<Long, Double> helpDis = new HashMap<>();
         final Comparator<Long> cmp = (o1, o2) -> {
-            Double a = disTO.get(o1) + g.distance(o1, st);
-            Double b = disTO.get(o2) + g.distance(o2, st);
+            Double a = disTO.get(o1) + g.distance(o1, ed);
+            Double b = disTO.get(o2) + g.distance(o2, ed);
             return a.compareTo(b);
         };
         // 能不能返回正确的大小关系？ —— 开始确实不能 // (disTO.get(o1) > disTO.get(o2)); // BUG : 使用 (int) (disTO.get(o1) - disTO.get(o2))
